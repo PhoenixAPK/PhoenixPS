@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phoenix Printing Solutions | Redefine Your Space</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <script src="../assets/js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase.js"></script>
+  <style>
+    :root { --glass: rgba(0,0,0,0.6); --glass-border: rgba(255,255,255,0.2); --electric-lime:#00FF87; --fire-orange:#ff4d00; --fire-yellow:#ffcc00; --pps-green:#066d44; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#020605 url('../assets/images/PPS Background.png') no-repeat center center fixed;background-size:cover;color:#fff;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding-top:140px;padding-bottom:68px}
+    body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:-1}
+    nav{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);position:fixed;width:100%;top:0;z-index:1000;border-bottom:1px solid var(--glass-border)}
+    .brand-name{font-family:'Syncopate',sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:2px;text-transform:uppercase;color:#fff;text-shadow:0 0 5px #fff,0 0 10px #ffcc00,0 0 20px #ff4d00}
+    .nav-buttons{display:flex;gap:20px}
+    .nav-btn{text-decoration:none;color:#fff;font-family:'Syncopate',sans-serif;font-size:.7rem;font-weight:700;padding:10px 18px;border-radius:5px;transition:.3s;border:1px solid transparent}
+    .nav-btn:hover{color:var(--electric-lime);border-color:var(--electric-lime);background:rgba(0,255,135,0.1)}
+    .queue-container{width:90%;max-width:1200px;background:#fff;color:#333;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
+    .table-title{padding:25px 30px;font-family:'Syncopate';font-size:.9rem;letter-spacing:3px;background:var(--pps-green);color:#fff;display:flex;align-items:center;justify-content:space-between}
+    table{width:100%;border-collapse:collapse;text-align:left}
+    thead{background:#fafafa;font-family:'Syncopate';font-size:.65rem;letter-spacing:2px;color:#888}
+    th{padding:20px 30px;font-weight:700;border-bottom:1px solid #e0e0e0}
+    td{padding:18px 30px;border-bottom:1px solid #eee;font-size:.85rem;color:#333}
+    tr:hover td{background:#f9f9f9}
+    .ref-code{color:var(--pps-green);font-family:monospace;font-weight:700;letter-spacing:1px}
+    .btn-stack{display:flex;gap:10px;align-items:center}
+    .btn-action{border:none;padding:8px 16px;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;color:#fff;text-transform:uppercase;transition:opacity .2s}
+    .btn-activate{background:#2e7d32}
+    .btn-archive{background:#c62828}
+    footer{position:fixed;left:0;right:0;bottom:0;height:68px;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:1000;border-top:1px solid var(--glass-border)}
+    .footer-logo{height:30px;margin-right:15px}
+    footer p{font-family:'Syncopate',sans-serif;font-size:.62rem;letter-spacing:3px;color:#fff;opacity:.7;margin:0}
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand-name">Phoenix Printing Solutions</span>
+    <div class="nav-buttons">
+      <a href="pendingqueue.html" class="nav-btn">PENDING QUEUE</a>
+      <a href="inprogress.html" class="nav-btn">IN PROGRESS</a>
+      <a href="admininvoice.html" class="nav-btn">INVOICE</a>
+      <a href="archive.html" class="nav-btn">ARCHIVE</a>
+      <a href="#" class="nav-btn" onclick="logoutAdmin()">LOGOUT</a>
+    </div>
+  </nav>
+  <div class="queue-container">
+    <div class="table-title"><span>IN PROGRESS QUEUE</span></div>
+    <table>
+      <thead>
+        <tr><th>Reference</th><th>Client / Business Name</th><th>Workspaces</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="inProgressBody"></tbody>
+    </table>
+  </div>
+  <footer>
+    <img src="../assets/images/PPS logo.png" alt="Logo" class="footer-logo">
+    <p>© 2026 PHOENIX PRINTING SOLUTIONS</p>
+  </footer>
+  <script>
+  (function(){
+    async function fetchAndRender(){
+      try{
+        const { data: items, error } = await window.supabaseClient
+          .from('pps_queue')
+          .select('*')
+          .eq('status','in-progress')
+          .order('created_at',{ascending:false});
+        if(error) throw error;
+        render(items||[]);
+      }catch(err){ console.error('Error fetching in-progress:', err); }
+    }
+    function render(items){
+      const tbody=document.getElementById('inProgressBody');
+      tbody.innerHTML='';
+      if(items.length===0){
+        tbody.innerHTML='<tr><td colspan="4" style="text-align:center; padding:50px; opacity:0.5;">No active requests in progress.</td></tr>';
+        return;
+      }
+      items.forEach(req=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td class="ref-code">#PPS-${req.request_id.slice(0,8).toUpperCase()}</td>
+          <td><strong>${req.client?.name||'Unknown'}</strong></td>
+          <td>${(req.workspaces||[]).length} Units</td>
+          <td>
+            <div class="btn-stack">
+              <button class="btn-action btn-activate" onclick="window.moveBack('${req.request_id}')">Activate</button>
+              <button class="btn-action btn-archive" onclick="window.moveToArchive('${req.request_id}')">Archive</button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    window.moveBack=async(id)=>{
+      try{
+        const { error } = await window.supabaseClient
+          .from('pps_queue')
+          .update({ status:'pending', created_at: new Date().toISOString() })
+          .eq('request_id', id);
+        if(error) throw error;
+        fetchAndRender();
+      }catch(err){ console.error('Error moving back:', err); }
+    };
+    window.moveToArchive=async(id)=>{
+      try{
+        const { error } = await window.supabaseClient
+          .from('pps_queue')
+          .update({ status:'archived' })
+          .eq('request_id', id);
+        if(error) throw error;
+        fetchAndRender();
+      }catch(err){ console.error('Error moving to archive:', err); }
+    };
+    function subscribeToChanges(){
+      window.supabaseClient
+        .channel('pps_queue_changes_inprogress')
+        .on('postgres_changes',{event:'*',table:'pps_queue'},()=>fetchAndRender())
+        .subscribe();
+    }
+    document.addEventListener('DOMContentLoaded',()=>{ fetchAndRender(); subscribeToChanges(); });
+  })();
+  </script>
+</body>
+</html>

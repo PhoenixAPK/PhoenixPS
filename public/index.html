@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Printing Solutions | Redefine Your Space</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass: rgba(0, 0, 0, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --electric-lime: #00FF87;
+            --fire-orange: #ff4d00;
+            --fire-yellow: #ffcc00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #020605 url('../assets/images/PPS Background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        /* NAVIGATION & GLOWING LOGO */
+        nav {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .brand-name {
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #fff;
+            /* Fiery Glow Effect */
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #ffcc00,
+                0 0 20px #ff4d00,
+                0 0 30px #ff4d00,
+                0 0 40px #ff0000;
+            animation: flicker 1.5s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 1; text-shadow: 0 0 10px var(--fire-orange), 0 0 20px var(--fire-yellow); }
+            100% { opacity: 0.9; text-shadow: 0 0 15px var(--fire-orange), 0 0 30px var(--fire-orange), 0 0 40px #ff0000; }
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: #fff;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: 5px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav-btn:hover {
+            color: var(--electric-lime);
+            border-color: var(--electric-lime);
+            background: rgba(0, 255, 135, 0.1);
+        }
+
+        /* HERO & CONTENT */
+        .hero { min-height: 100vh; display: flex; align-items: center; padding: 140px 8% 80px; }
+        .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 60px; }
+        .hero-text h1 { font-family: 'Syncopate', sans-serif; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1; margin-bottom: 25px; background: linear-gradient(to bottom, #fff 50%, var(--electric-lime)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-text p { font-size: 1.1rem; color: #eee; margin-bottom: 40px; max-width: 500px; line-height: 1.6; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .evolution-badge { display: inline-block; padding: 15px 35px; border: 1px solid var(--electric-lime); color: var(--electric-lime); border-radius: 100px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; font-size: 0.85rem; pointer-events: none; background: rgba(0, 0, 0, 0.3); }
+        .hero-image img { width: 100%; border-radius: 30px; border: 1px solid var(--glass-border); }
+
+        /* SURFACE GRID */
+        .surfaces { padding: 100px 8%; background: rgba(5, 10, 9, 0.85); backdrop-filter: blur(10px); }
+        .section-tag { color: var(--electric-lime); text-transform: uppercase; letter-spacing: 6px; font-weight: 800; margin-bottom: 20px; display: block; }
+        .surface-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 50px; }
+        .surface-card { height: 400px; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid var(--glass-border); transition: 0.4s; }
+        .surface-card:hover { transform: translateY(-10px); border-color: var(--electric-lime); }
+        .surface-img { width: 100%; height: 100%; object-fit: cover; position: absolute; filter: brightness(0.8); }
+        .surface-info { position: absolute; bottom: 0; padding: 30px; z-index: 2; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); }
+        .surface-info h3 { font-family: 'Syncopate', sans-serif; font-size: 1.1rem; color: var(--electric-lime); }
+
+        /* TECH SPECS */
+        .tech-specs { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); background: rgba(2, 6, 5, 0.9); }
+        .spec-box { padding: 40px 20px; text-align: center; border-right: 1px solid var(--glass-border); }
+        .spec-box:last-child { border-right: none; }
+        .spec-box h4 { font-size: 1.8rem; color: #fff; font-weight: 800; }
+        .spec-box p { color: var(--electric-lime); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; }
+
+        @media (max-width: 900px) {
+            .hero-grid { grid-template-columns: 1fr; }
+            .tech-specs { grid-template-columns: 1fr; }
+            .spec-box { border-right: none; border-bottom: 1px solid var(--glass-border); }
+            nav { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <span class="brand-name">Phoenix Printing Solutions</span>
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn">HOME</a>
+            <a href="invoice.html" class="nav-btn">INVOICE</a>
+            <a href="contactus.html" class="nav-btn">CONTACT US</a>
+            <a href="feedback.html" class="nav-btn">FEEDBACK</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-grid">
+            <div class="hero-text">
+                <span class="section-tag">Direct-to-Surface</span>
+                <h1>TRANSFORM YOUR CANVAS</h1>
+                <p>Architectural-grade precision meets limitless imagination. We transform vertical surfaces into living masterpieces with our Phoenix Pro.</p>
+                <div class="evolution-badge">START YOUR EVOLUTION</div>
+            </div>
+            <div class="hero-image">
+                <img src="../assets/images/Phoenix Pro.jpg" alt="Phoenix Pro">
+            </div>
+        </div>
+    </section>
+
+    <section class="surfaces">
+        <span class="section-tag">Material Mastery</span>
+        <h2 style="font-family: 'Syncopate'; font-size: 2.5rem;">UNLIMITED TEXTURES</h2>
+        <div class="surface-grid">
+            <div class="surface-card">
+                <img src="../assets/images/image1.jfif" class="surface-img" alt="Concrete Art">
+                <div class="surface-info"><h3>VIBRANT CONCRETE</h3></div>
+            </div>
+            <div class="surface-card">
+                <img src="../assets/images/image 2.jfif" class="surface-img" alt="Brick Mural">
+                <div class="surface-info"><h3>BEYOND BRICK</h3></div>
+            </div>
+            <div class="surface-card">
+                <img src="../assets/images/image 3.jfif" class="surface-img" alt="Lobby Art">
+                <div class="surface-info"><h3>LUXURY INTERIORS</h3></div>
+            </div>
+            <div class="surface-card">
+                <img src="../assets/images/image 4.jfif" class="surface-img" alt="Exterior Mural">
+                <div class="surface-info"><h3>OUTDOOR CANVASES</h3></div>
+            </div>
+            <div class="surface-card">
+                <img src="../assets/images/image 5.jfif" class="surface-img" alt="Commercial Graphics">
+                <div class="surface-info"><h3>HIGH-SATURATION SURFACES</h3></div>
+            </div>
+            <div class="surface-card">
+                <img src="../assets/images/image 6.jfif" class="surface-img" alt="Racing Mural">
+                <div class="surface-info"><h3>DYNAMIC ARCHITECTURE</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tech-specs">
+        <div class="spec-box">
+            <h4>7 MIN</h4>
+            <p>INSTALLED IN 7 MINUTES</p>
+        </div>
+        <div class="spec-box">
+            <h4>AUTO</h4>
+            <p>RESUME AFTER POWER RECOVERY</p>
+        </div>
+        <div class="spec-box">
+            <h4>&infin;</h4>
+            <p>UNLIMITED PRINT WIDTH</p>
+        </div>
+    </section>
+
+    <footer style="padding: 40px 8%; text-align: center; background: rgba(0,0,0,0.85);">
+        <img src="../assets/images/PPS logo.png" alt="Logo" style="height: 40px; margin-bottom: 10px;">
+        <p style="font-family: 'Syncopate'; font-size: 0.6rem; letter-spacing: 3px; opacity: 0.5;">&copy; 2026 PHOENIX PRINTING SOLUTIONS</p>
+    </footer>
+
+</body>
+</html>

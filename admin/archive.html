@@ -83,8 +83,8 @@ Proceed with the final file here is the code again <!DOCTYPE html>
    ============================================================ */
 
 async function generateDetailedInvoicePDF(req) {
-  const { jsPDF } = window.jspdf || {};
-  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+const { jsPDF } = window.jspdf;
+const pdf = new jsPDF({ unit: "pt", format: "a4" });
 
   // -------- HEADER --------
   pdf.setFont("helvetica", "bold");

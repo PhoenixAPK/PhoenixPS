@@ -4,10 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phoenix Printing Solutions | Redefine Your Space</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
   <script src="../assets/js/auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/js/supabase.js"></script>
+
+  <!-- NEW: Google Identity Services (OAuth for Drive) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- NEW: jsPDF (client-side PDF generation) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
   <style>
     :root { --glass: rgba(0,0,0,0.6); --glass-border: rgba(255,255,255,0.2); --electric-lime:#00FF87; --fire-orange:#ff4d00; --fire-yellow:#ffcc00; --pps-green:#066d44; }
     *{margin:0;padding:0;box-sizing:border-box}
@@ -50,6 +58,7 @@
       <a href="#" class="nav-btn" onclick="logoutAdmin()">LOGOUT</a>
     </div>
   </nav>
+
   <div class="main-content">
     <div class="queue-container">
       <div class="queue-header-box">
@@ -70,13 +79,32 @@
       </table>
     </div>
   </div>
+
   <footer>
     <img src="../assets/images/PPS logo.png" alt="Logo" class="footer-logo">
     <p>© 2026 PHOENIX PRINTING SOLUTIONS</p>
   </footer>
+
   <script>
   (function(){
+
+    // ======================================================================
+    // ================== GOOGLE DRIVE KEYS (LINE ~210) ======================
+    // Replace BOTH placeholders below with your real values.
+    // NOTE: In browser (SPA) flow, the secret is NOT used. Keep it for parity.
+    const GOOGLE_CLIENT_ID = "REPLACE_WITH_YOUR_CLIENT_ID";
+    const GOOGLE_CLIENT_SECRET = "REPLACE_WITH_YOUR_CLIENT_SECRET"; // not used in browser flow
+    const GOOGLE_SCOPES = [
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ].join(" ");
+    // ======================================================================
+
+    // Utility: make a short code for display (unchanged)
     function abbreviate(id){ return id ? ('#PPS-' + id.slice(0,8).toUpperCase()) : '#PPS-XXXX'; }
+
+    // ===== EXISTING: Fetch & Render (unchanged) =====
     async function fetchAndRender(){
       try{
         const { data: items, error } = await window.supabaseClient
@@ -88,6 +116,8 @@
         render(items||[]);
       }catch(err){ console.error('Error fetching archive:', err); }
     }
+
+    // ===== EXISTING: Activate (unchanged) =====
     window.activateItem = async function(id){
       try{
         const { error } = await window.supabaseClient
@@ -98,28 +128,183 @@
         fetchAndRender();
       }catch(err){ console.error('Error activating item:', err); }
     }
-    window.deleteItem = async function(id){
-      if(confirm('Delete permanently?')){
+
+    // ===== NEW: Finished flow =====
+    // 1) Fetch request by ID
+    async function fetchRequestById(id){
+      const { data, error } = await window.supabaseClient
+        .from('pps_queue')
+        .select('*')
+        .eq('request_id', id)
+        .single();
+      if(error) throw error;
+      return data;
+    }
+
+    // 2) Generate a simple PDF with jsPDF from request data
+    async function generatePdfFromRequest(req){
+      const { jsPDF } = window.jspdf || {};
+      if(!jsPDF){ throw new Error('jsPDF not loaded'); }
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+
+      const line = (text, y, x=50) => doc.text(String(text || ''), x, y);
+
+      // Header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      line('Phoenix Printing Solutions', 60);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      line('Archive Record', 80);
+      doc.setDrawColor(6,109,68);
+      doc.line(50, 90, 545, 90);
+
+      // Body
+      let y = 120;
+      const rowGap = 18;
+
+      const ref = abbreviate(req.request_id);
+      line(`Reference: ${ref}`, y); y += rowGap;
+      line(`Created: ${req.created_at || 'N/A'}`, y); y += rowGap;
+      line(`Status: ${req.status || 'N/A'}`, y); y += (rowGap * 2);
+
+      doc.setFont('helvetica', 'bold'); line('Client', y); doc.setFont('helvetica', 'normal'); y += rowGap;
+      line(`Name: ${req.client?.name || 'N/A'}`, y); y += rowGap;
+      line(`Email: ${req.client?.email || 'N/A'}`, y); y += rowGap;
+      line(`Phone: ${req.client?.phone || 'N/A'}`, y); y += (rowGap * 2);
+
+      doc.setFont('helvetica', 'bold'); line('Location', y); doc.setFont('helvetica', 'normal'); y += rowGap;
+      line(`City: ${req.location?.city || 'N/A'}`, y); y += rowGap;
+      line(`Address: ${req.location?.address || 'N/A'}`, y); y += (rowGap * 2);
+
+      const units = Array.isArray(req.workspaces) ? req.workspaces.length : (req.workspaces?.length || 0);
+      doc.setFont('helvetica', 'bold'); line('Order', y); doc.setFont('helvetica', 'normal'); y += rowGap;
+      line(`Units: ${units}`, y); y += rowGap;
+
+      // Footer
+      doc.setFontSize(10);
+      doc.setTextColor(120,120,120);
+      line('Generated automatically for archive', 780);
+
+      return doc.output('blob'); // Blob of PDF
+    }
+
+    // 3) Google OAuth: get Access Token (lazy-init)
+    function getGoogleAccessToken(){
+      return new Promise((resolve, reject) => {
+        if(!window.google || !google.accounts || !google.accounts.oauth2){
+          return reject(new Error('Google OAuth not loaded yet. Please wait a second and try again.'));
+        }
         try{
-          const { error } = await window.supabaseClient
-            .from('pps_queue')
-            .delete()
-            .eq('request_id', id);
-          if(error) throw error;
-          fetchAndRender();
-        }catch(err){ console.error('Error deleting item:', err); }
+          const tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: GOOGLE_SCOPES,
+            prompt: '', // try silent if user already granted; falls back to consent
+            callback: (tokenResponse) => {
+              if(tokenResponse && tokenResponse.access_token){
+                resolve(tokenResponse.access_token);
+              } else {
+                reject(new Error('No access token returned'));
+              }
+            }
+          });
+          tokenClient.requestAccessToken();
+        }catch(e){
+          reject(e);
+        }
+      });
+    }
+
+    // 4) Upload PDF Blob to Google Drive using multipart upload
+    async function uploadToGoogleDrive(pdfBlob, fileName, accessToken){
+      const metadata = {
+        name: fileName,
+        mimeType: 'application/pdf'
+        // To upload into a specific folder, add: parents: ['YOUR_FOLDER_ID']
+      };
+
+      const boundary = '-------PPSArchiveBoundary' + Math.random().toString(36).slice(2);
+      const delimiter = '--' + boundary + '\r\n';
+      const closeDelim = '--' + boundary + '--';
+
+      const body = new Blob([
+        delimiter,
+        'Content-Type: application/json; charset=UTF-8\r\n\r\n',
+        JSON.stringify(metadata) + '\r\n',
+        delimiter,
+        'Content-Type: application/pdf\r\n\r\n',
+        pdfBlob,
+        '\r\n' + closeDelim
+      ], { type: 'multipart/related; boundary=' + boundary });
+
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + accessToken,
+          'Content-Type': 'multipart/related; boundary=' + boundary
+        },
+        body
+      });
+
+      if(!res.ok){
+        const t = await res.text().catch(()=> '');
+        throw new Error('Drive upload failed: ' + res.status + ' ' + t);
+      }
+      return res.json();
+    }
+
+    // 5) Public handler: Finished
+    window.finishItem = async function(id){
+      // Optional minimal UX feedback without changing design:
+      const btn = document.querySelector(`button[onclick="finishItem('${id}')"]`);
+      if(btn){ btn.disabled = true; btn.style.opacity = 0.7; btn.textContent = 'Finishing…'; }
+
+      try{
+        // a) Fetch the full request
+        const req = await fetchRequestById(id);
+
+        // b) Generate PDF
+        const fileName = `PPS-${(id||'').slice(0,8).toUpperCase() || 'XXXX'}.pdf`;
+        const pdfBlob = await generatePdfFromRequest(req);
+
+        // c) Google sign-in & token
+        const token = await getGoogleAccessToken();
+
+        // d) Upload to Google Drive
+        await uploadToGoogleDrive(pdfBlob, fileName, token);
+
+        // e) Remove from queue (delete row)
+        const { error: delErr } = await window.supabaseClient
+          .from('pps_queue')
+          .delete()
+          .eq('request_id', id);
+        if(delErr) throw delErr;
+
+        // f) Refresh UI
+        await fetchAndRender();
+
+        if(btn){ btn.textContent = 'Finished'; }
+        alert('Saved to Google Drive and removed from queue.');
+      }catch(err){
+        console.error('Finish error:', err);
+        if(btn){ btn.textContent = 'Finished'; btn.disabled = false; btn.style.opacity = 1; }
+        alert('Could not finish: ' + (err?.message || err));
       }
     }
+
+    // ===== EXISTING: Render (ONLY the Delete button changed to Finished) =====
     function render(data){
       var tbody=document.getElementById('archiveBody');
       var countLabel=document.getElementById('archiveCount');
       if(!tbody) return;
       tbody.innerHTML='';
       countLabel.innerText = data.length + ' Archived Items';
+
       if(data.length===0){
         tbody.innerHTML='<tr><td colspan="5" style="text-align:center; padding:50px; opacity:0.5;">No archived items.</td></tr>';
         return;
       }
+
       data.forEach(function(req){
         var tr=document.createElement('tr');
         tr.innerHTML=`
@@ -129,20 +314,20 @@
           <td>${req.workspaces?.length || 0} Units</td>
           <td>
             <div class="action-cell">
-              <button class="btn-action activate-btn" onclick="activateItem('${req.request_id}')">Activate</button>
-              <button class="btn-action delete-btn" onclick="deleteItem('${req.request_id}')">Delete</button>
-            </div>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-    }
+              <button class="btn-action activate-btn" onclick="activateItem('${ (unchanged) =====
     function subscribeToChanges(){
       window.supabaseClient
         .channel('pps_queue_changes_archive')
-        .on('postgres_changes',{event:'*',table:'pps_queue'},()=>fetchAndRender())
+        .on('postgres_changes',{event:'*',table:'pps_queue'},() => fetchAndRender())
         .subscribe();
     }
-    document.addEventListener('DOMContentLoaded',()=>{ fetchAndRender(); subscribeToChanges(); });
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded',() => {
+      fetchAndRender();
+      subscribeToChanges();
+    });
+
   })();
   </script>
 </body>

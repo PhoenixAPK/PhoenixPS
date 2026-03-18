@@ -76,6 +76,162 @@ Proceed with the final file here is the code again <!DOCTYPE html>
   </footer>
   <script>
   (function(){
+    /* ============================================================
+   BLOCK 1 — Detailed Invoice PDF Generator
+   Creates a clean invoice PDF for the archived job.
+   Paste this ABOVE your other JS functions.
+   ============================================================ */
+
+async function generateDetailedInvoicePDF(req) {
+  const { jsPDF } = window.jspdf || {};
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+
+  // -------- HEADER --------
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(22);
+  pdf.text("PHOENIX PRINTING SOLUTIONS", 40, 50);
+
+  pdf.setFontSize(12);
+  pdf.setFont("helvetica", "normal");
+  pdf.text("Archive Invoice Document", 40, 70);
+
+  pdf.setDrawColor(6, 109, 68);
+  pdf.setLineWidth(1.2);
+  pdf.line(40, 80, 550, 80);
+
+  let y = 120;
+
+  // -------- REFERENCE SECTION --------
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("REFERENCE DETAILS", 40, y);
+  y += 25;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+  pdf.text(`Request ID: ${req.request_id || "N/A"}`, 40, y); y += 18;
+  pdf.text(`Created: ${req.created_at || "N/A"}`, 40, y); y += 18;
+  pdf.text(`Status: ${req.status || "archived"}`, 40, y); y += 30;
+
+  // -------- CLIENT SECTION --------
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("CLIENT / BUSINESS INFORMATION", 40, y);
+  y += 25;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+  pdf.text(`Name: ${req.client?.name || "N/A"}`, 40, y); y += 18;
+  pdf.text(`Email: ${req.client?.email || "N/A"}`, 40, y); y += 18;
+  pdf.text(`Phone: ${req.client?.phone || "N/A"}`, 40, y); y += 30;
+
+  // -------- LOCATION SECTION --------
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("LOCATION", 40, y);
+  y += 25;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+  pdf.text(`City: ${req.location?.city || "N/A"}`, 40, y); y += 18;
+  pdf.text(`Address: ${req.location?.address || "N/A"}`, 40, y); y += 30;
+
+  // -------- WORKSPACE SECTION --------
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("WORKSPACES", 40, y);
+  y += 25;
+
+  const units = Array.isArray(req.workspaces)
+    ? req.workspaces.length
+    : (req.workspaces?.length || 0);
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+  pdf.text(`Total Units: ${units}`, 40, y);
+  y += 30;
+
+  // If workspace details exist, list them simply
+  if (Array.isArray(req.workspaces)) {
+    req.workspaces.forEach((ws, index) => {
+      pdf.text(`• Workspace #${index + 1}: ${ws.type || "Unit"}`, 55, y);
+      y += 18;
+
+      if (y > 750) {
+        pdf.addPage();
+        y = 50;
+      }
+    });
+  }
+
+  // -------- FOOTER --------
+  pdf.setFontSize(10);
+  pdf.setTextColor(120, 120, 120);
+  pdf.text("Generated automatically by Phoenix Printing Solutions - Archive System", 40, 820);
+
+  return pdf.output("blob"); // return PDF blob
+}
+    /* ============================================================
+   BLOCK 2 — Upload PDF to Supabase Storage
+   Bucket: Archive-Invoice
+   Folder: archive/
+   Path example: Archive-Invoice/archive/ID.pdf
+   ============================================================ */
+
+async function uploadPdfToSupabase(id, pdfBlob) {
+  const filePath = `archive/${id}.pdf`;  // folder + file
+
+  const { data, error } = await window.supabaseClient.storage
+    .from("Archive-Invoice")
+    .upload(filePath, pdfBlob, {
+      contentType: "application/pdf",
+      upsert: true  // overwrite if same ID
+    });
+
+  if (error) throw error;
+
+  return data;
+}
+    /* ============================================================
+   BLOCK 3 — Finished Button Logic
+   Generates detailed PDF -> uploads to Supabase -> deletes item
+   ============================================================ */
+
+window.finishItem = async function(id) {
+  try {
+    // 1. Fetch full request from Supabase
+    const { data: req, error } = await window.supabaseClient
+      .from("pps_queue")
+      .select("*")
+      .eq("request_id", id)
+      .single();
+
+    if (error) throw error;
+
+    // 2. Generate detailed invoice PDF (Block 1)
+    const pdfBlob = await generateDetailedInvoicePDF(req);
+
+    // 3. Upload to Supabase Storage (Block 2)
+    await uploadPdfToSupabase(id, pdfBlob);
+
+    // 4. Delete request from queue
+    const { error: delErr } = await window.supabaseClient
+      .from("pps_queue")
+      .delete()
+      .eq("request_id", id);
+
+    if (delErr) throw delErr;
+
+    // 5. Refresh UI
+    fetchAndRender();
+    alert("Archived invoice saved successfully.");
+
+  } catch (err) {
+    console.error("Finished error:", err);
+    alert("Error finishing request.");
+  }
+};
+    
     function abbreviate(id){ return id ? ('#PPS-' + id.slice(0,8).toUpperCase()) : '#PPS-XXXX'; }
     async function fetchAndRender(){
       try{
@@ -130,7 +286,7 @@ Proceed with the final file here is the code again <!DOCTYPE html>
           <td>
             <div class="action-cell">
               <button class="btn-action activate-btn" onclick="activateItem('${req.request_id}')">Activate</button>
-              <button class="btn-action delete-btn" onclick="deleteItem('${req.request_id}')">Delete</button>
+              <button class="btn-action delete-btn" onclick="finishItem('${req.request_id}')">Finished</button>
             </div>
           </td>`;
         tbody.appendChild(tr);

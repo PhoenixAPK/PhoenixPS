@@ -492,7 +492,16 @@ function startClientMode() {
     document.getElementById("clientCity").onchange = handleCity;   // ✔ THIS FIXES AUTO-FILL
     handleCity();
 }
-function startEntrepreneurMode() { isEntrepreneur = true; setModeLabel("Entrepreneur Mode"); document.getElementById("modePage").style.display = "none"; document.getElementById("calculatorPage").style.display = "block"; populateCitySelect(); handleCity(); }
+function startEntrepreneurMode() {
+    isEntrepreneur = true;
+    setModeLabel("Entrepreneur Mode");
+    document.getElementById("modePage").style.display = "none";
+    document.getElementById("calculatorPage").style.display = "block";
+
+    populateCitySelect();
+    document.getElementById("clientCity").onchange = handleCity;  // enables auto-fill
+    handleCity();
+}
 function returnToMode() { document.getElementById("calculatorPage").style.display = "none"; document.getElementById("modePage").style.display = "flex"; }
 function populateCitySelect() { const clientCityEl = document.getElementById("clientCity"); clientCityEl.innerHTML = '<option value="">Select City</option>'; cityData.sort((a, b) => a.city.localeCompare(b.city)).forEach(item => { const option = document.createElement("option"); option.value = item.city; option.text = item.city; clientCityEl.appendChild(option); }); }
 function addPictureRow(isMandatory, targetColumn = null) {

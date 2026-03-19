@@ -183,7 +183,7 @@ async function uploadPdfToSupabase(id, pdfBlob) {
   const filePath = `archive/${id}.pdf`;  // folder + file
 
   const { data, error } = await window.supabaseClient.storage
-    .from("Archive-Invoice")
+    .from("Archive-invoice")
     .upload(filePath, pdfBlob, {
       contentType: "application/pdf",
       upsert: true  // overwrite if same ID

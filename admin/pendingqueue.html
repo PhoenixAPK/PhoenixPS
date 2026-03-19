@@ -105,7 +105,7 @@
       }
       items.forEach(req => {
         const tr = document.createElement('tr');
-        const mode = req.meta?.mode || 'client';
+        const mode = req.sourceMode || 'client';
         tr.onclick = () => handleRequestClick(req.request_id, mode);
         const time = req.created_at ? new Date(req.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--:--';
         const modeClass = mode === 'entrepreneur' ? 'mode-entrepreneur' : 'mode-client';

@@ -77,7 +77,6 @@
   </footer>
   <script>
   (function(){
-    /* BLOCK 1 — PDF Generation */
     async function generateDetailedInvoicePDF(req) {
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ unit: "pt", format: "a4" });
@@ -139,11 +138,10 @@
       return pdf.output("blob");
     }
 
-    /* BLOCK 2 — Storage Upload (Corrected Bucket Name) */
     async function uploadPdfToSupabase(id, pdfBlob) {
       const filePath = `archive/${id}.pdf`;
       const { data, error } = await window.supabaseClient.storage
-        .from("Archive-invoice")
+        .from("Archive-invoice") // Corrected capitalization
         .upload(filePath, pdfBlob, {
           contentType: "application/pdf",
           upsert: true
@@ -152,7 +150,6 @@
       return data;
     }
 
-    /* BLOCK 3 — Archive Workflow */
     window.finishItem = async function(id) {
       try {
         const { data: req, error } = await window.supabaseClient
@@ -172,7 +169,7 @@
         alert("Archived invoice saved successfully.");
       } catch (err) {
         console.error("Finished error:", err);
-        alert("Error finishing request. Check your Storage bucket name and policies.");
+        alert("Error finishing request. Ensure bucket name is exact.");
       }
     };
 

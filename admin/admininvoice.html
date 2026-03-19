@@ -679,34 +679,72 @@ async function downloadInvoice() {
 }
 </script>
 <script>
-(function(){
-  function loadQueue(){ try{ return JSON.parse(localStorage.getItem('pps_queue'))||[] }catch(e){ return [] } }
-  function getParam(name){ var u=new URL(window.location.href); return u.searchParams.get(name); }
-  function prefill(){
-    var id = getParam('request_id'); if(!id) return;
-    var q = loadQueue(); var req = q.find(function(r){ return r.request_id === id; }); if(!req) return;
-    
-    // Logic to set correctly between Client and Entrepreneur Admin mode based on the saved sourceMode
-    var mode = (req.sourceMode || 'client').toLowerCase();
-    if(mode === 'entrepreneur') startEntrepreneurMode(); else startClientMode();
+<script>
+(function() {
+  async function getRequestFromSupabase(id) {
+    const { data, error } = await window.supabaseClient
+      .from("pps_queue")
+      .select("*")
+      .eq("request_id", id)
+      .single();
 
-    document.getElementById('clientName').value = req.client?.name || '';
-    document.getElementById('clientContact').value = req.client?.contact || '';
-    document.getElementById('clientEmail').value = req.client?.email || '';
-    document.getElementById('clientAddress').value = req.client?.address || '';
-    var citySel = document.getElementById('clientCity');
-    if(citySel){ citySel.value = req.location?.city || ''; handleCity(); }
-    
-    var need = (req.workspaces || []).length; var have = document.querySelectorAll('.picture-row').length;
-    for(var i=have; i<need; i++){ addPictureRow(false); }
-    var rows = Array.from(document.querySelectorAll('.picture-row'));
-    (req.workspaces || []).forEach(function(w, idx){
-      var r = rows[idx]; if(!r) return;
-      r.querySelector('.height').value = w.height || 0;
-      r.querySelector('.width').value = w.width || 0;
+    if (error) {
+      console.error("Supabase fetch error:", error);
+      return null;
+    }
+    return data;
+  }
+
+  function getParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  }
+
+  async function prefill() {
+    const id = getParam("request_id");
+    if (!id) return;
+
+    const req = await getRequestFromSupabase(id);
+    if (!req) return;
+
+    // Determine mode from sourceMode
+    const mode = (req.sourceMode || "client").toLowerCase();
+    if (mode === "entrepreneur") startEntrepreneurMode();
+    else startClientMode();
+
+    // Prefill client details
+    document.getElementById("clientName").value = req.client?.name || "";
+    document.getElementById("clientContact").value = req.client?.contact || "";
+    document.getElementById("clientEmail").value = req.client?.email || "";
+    document.getElementById("clientAddress").value = req.client?.address || "";
+
+    const citySel = document.getElementById("clientCity");
+    if (citySel) {
+      citySel.value = req.location?.city || "";
+      handleCity();
+    }
+
+    // Add workspace rows
+    const need = (req.workspaces || []).length;
+    const have = document.querySelectorAll(".picture-row").length;
+    for (let i = have; i < need; i++) addPictureRow(false);
+
+    // Fill workspace content
+    const rows = Array.from(document.querySelectorAll(".picture-row"));
+    (req.workspaces || []).forEach((w, idx) => {
+      const r = rows[idx];
+      if (!r) return;
+      r.querySelector(".height").value = w.height || 0;
+      r.querySelector(".width").value = w.width || 0;
     });
+
     calculateAreas();
   }
+
+  document.addEventListener("DOMContentLoaded", prefill);
+})();
+</script>
+``
   document.addEventListener('DOMContentLoaded', prefill);
 })();
 </script>

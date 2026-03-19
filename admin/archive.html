@@ -1,4 +1,4 @@
-Proceed with the final file here is the code again <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@ Proceed with the final file here is the code again <!DOCTYPE html>
   <script src="../assets/js/auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/js/supabase.js"></script>
-  https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root { --glass: rgba(0,0,0,0.6); --glass-border: rgba(255,255,255,0.2); --electric-lime:#00FF87; --fire-orange:#ff4d00; --fire-yellow:#ffcc00; --pps-green:#066d44; }
     *{margin:0;padding:0;box-sizing:border-box}
@@ -78,162 +78,130 @@ Proceed with the final file here is the code again <!DOCTYPE html>
   <script>
   (function(){
     /* ============================================================
-   BLOCK 1 — Detailed Invoice PDF Generator
-   Creates a clean invoice PDF for the archived job.
-   Paste this ABOVE your other JS functions.
-   ============================================================ */
+       BLOCK 1 — Detailed Invoice PDF Generator
+       ============================================================ */
+    async function generateDetailedInvoicePDF(req) {
+      // Corrected destructuring for version 2.5.1
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: "pt", format: "a4" });
 
-async function generateDetailedInvoicePDF(req) {
-const { jsPDF } = window.jspdf;
-const pdf = new jsPDF({ unit: "pt", format: "a4" });
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(22);
+      pdf.text("PHOENIX PRINTING SOLUTIONS", 40, 50);
 
-  // -------- HEADER --------
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(22);
-  pdf.text("PHOENIX PRINTING SOLUTIONS", 40, 50);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Archive Invoice Document", 40, 70);
 
-  pdf.setFontSize(12);
-  pdf.setFont("helvetica", "normal");
-  pdf.text("Archive Invoice Document", 40, 70);
+      pdf.setDrawColor(6, 109, 68);
+      pdf.setLineWidth(1.2);
+      pdf.line(40, 80, 550, 80);
 
-  pdf.setDrawColor(6, 109, 68);
-  pdf.setLineWidth(1.2);
-  pdf.line(40, 80, 550, 80);
+      let y = 120;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.text("REFERENCE DETAILS", 40, y);
+      y += 25;
 
-  let y = 120;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.text(`Request ID: ${req.request_id || "N/A"}`, 40, y); y += 18;
+      pdf.text(`Created: ${req.created_at || "N/A"}`, 40, y); y += 18;
+      pdf.text(`Status: ${req.status || "archived"}`, 40, y); y += 30;
 
-  // -------- REFERENCE SECTION --------
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text("REFERENCE DETAILS", 40, y);
-  y += 25;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.text("CLIENT / BUSINESS INFORMATION", 40, y);
+      y += 25;
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
-  pdf.text(`Request ID: ${req.request_id || "N/A"}`, 40, y); y += 18;
-  pdf.text(`Created: ${req.created_at || "N/A"}`, 40, y); y += 18;
-  pdf.text(`Status: ${req.status || "archived"}`, 40, y); y += 30;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.text(`Name: ${req.client?.name || "N/A"}`, 40, y); y += 18;
+      pdf.text(`Email: ${req.client?.email || "N/A"}`, 40, y); y += 18;
+      pdf.text(`Phone: ${req.client?.phone || "N/A"}`, 40, y); y += 30;
 
-  // -------- CLIENT SECTION --------
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text("CLIENT / BUSINESS INFORMATION", 40, y);
-  y += 25;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.text("LOCATION", 40, y);
+      y += 25;
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
-  pdf.text(`Name: ${req.client?.name || "N/A"}`, 40, y); y += 18;
-  pdf.text(`Email: ${req.client?.email || "N/A"}`, 40, y); y += 18;
-  pdf.text(`Phone: ${req.client?.phone || "N/A"}`, 40, y); y += 30;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.text(`City: ${req.location?.city || "N/A"}`, 40, y); y += 18;
+      pdf.text(`Address: ${req.location?.address || "N/A"}`, 40, y); y += 30;
 
-  // -------- LOCATION SECTION --------
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text("LOCATION", 40, y);
-  y += 25;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.text("WORKSPACES", 40, y);
+      y += 25;
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
-  pdf.text(`City: ${req.location?.city || "N/A"}`, 40, y); y += 18;
-  pdf.text(`Address: ${req.location?.address || "N/A"}`, 40, y); y += 30;
+      const units = Array.isArray(req.workspaces) ? req.workspaces.length : (req.workspaces?.length || 0);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.text(`Total Units: ${units}`, 40, y);
+      y += 30;
 
-  // -------- WORKSPACE SECTION --------
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text("WORKSPACES", 40, y);
-  y += 25;
-
-  const units = Array.isArray(req.workspaces)
-    ? req.workspaces.length
-    : (req.workspaces?.length || 0);
-
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
-  pdf.text(`Total Units: ${units}`, 40, y);
-  y += 30;
-
-  // If workspace details exist, list them simply
-  if (Array.isArray(req.workspaces)) {
-    req.workspaces.forEach((ws, index) => {
-      pdf.text(`• Workspace #${index + 1}: ${ws.type || "Unit"}`, 55, y);
-      y += 18;
-
-      if (y > 750) {
-        pdf.addPage();
-        y = 50;
+      if (Array.isArray(req.workspaces)) {
+        req.workspaces.forEach((ws, index) => {
+          pdf.text(`• Workspace #${index + 1}: ${ws.type || "Unit"}`, 55, y);
+          y += 18;
+          if (y > 750) { pdf.addPage(); y = 50; }
+        });
       }
-    });
-  }
 
-  // -------- FOOTER --------
-  pdf.setFontSize(10);
-  pdf.setTextColor(120, 120, 120);
-  pdf.text("Generated automatically by Phoenix Printing Solutions - Archive System", 40, 820);
+      pdf.setFontSize(10);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text("Generated automatically by Phoenix Printing Solutions - Archive System", 40, 820);
 
-  return pdf.output("blob"); // return PDF blob
-}
+      return pdf.output("blob");
+    }
+
     /* ============================================================
-   BLOCK 2 — Upload PDF to Supabase Storage
-   Bucket: Archive-Invoice
-   Folder: archive/
-   Path example: Archive-Invoice/archive/ID.pdf
-   ============================================================ */
+       BLOCK 2 — Upload PDF to Supabase Storage
+       ============================================================ */
+    async function uploadPdfToSupabase(id, pdfBlob) {
+      const filePath = `archive/${id}.pdf`;
+      const { data, error } = await window.supabaseClient.storage
+        .from("Archive-invoice")
+        .upload(filePath, pdfBlob, {
+          contentType: "application/pdf",
+          upsert: true
+        });
+      if (error) throw error;
+      return data;
+    }
 
-async function uploadPdfToSupabase(id, pdfBlob) {
-  const filePath = `archive/${id}.pdf`;  // folder + file
-
-  const { data, error } = await window.supabaseClient.storage
-    .from("Archive-invoice")
-    .upload(filePath, pdfBlob, {
-      contentType: "application/pdf",
-      upsert: true  // overwrite if same ID
-    });
-
-  if (error) throw error;
-
-  return data;
-}
     /* ============================================================
-   BLOCK 3 — Finished Button Logic
-   Generates detailed PDF -> uploads to Supabase -> deletes item
-   ============================================================ */
+       BLOCK 3 — Finished Button Logic
+       ============================================================ */
+    window.finishItem = async function(id) {
+      try {
+        const { data: req, error } = await window.supabaseClient
+          .from("pps_queue")
+          .select("*")
+          .eq("request_id", id)
+          .single();
 
-window.finishItem = async function(id) {
-  try {
-    // 1. Fetch full request from Supabase
-    const { data: req, error } = await window.supabaseClient
-      .from("pps_queue")
-      .select("*")
-      .eq("request_id", id)
-      .single();
+        if (error) throw error;
+        const pdfBlob = await generateDetailedInvoicePDF(req);
+        await uploadPdfToSupabase(id, pdfBlob);
 
-    if (error) throw error;
+        const { error: delErr } = await window.supabaseClient
+          .from("pps_queue")
+          .delete()
+          .eq("request_id", id);
 
-    // 2. Generate detailed invoice PDF (Block 1)
-    const pdfBlob = await generateDetailedInvoicePDF(req);
+        if (delErr) throw delErr;
+        fetchAndRender();
+        alert("Archived invoice saved successfully.");
+      } catch (err) {
+        console.error("Finished error:", err);
+        alert("Error finishing request.");
+      }
+    };
 
-    // 3. Upload to Supabase Storage (Block 2)
-    await uploadPdfToSupabase(id, pdfBlob);
-
-    // 4. Delete request from queue
-    const { error: delErr } = await window.supabaseClient
-      .from("pps_queue")
-      .delete()
-      .eq("request_id", id);
-
-    if (delErr) throw delErr;
-
-    // 5. Refresh UI
-    fetchAndRender();
-    alert("Archived invoice saved successfully.");
-
-  } catch (err) {
-    console.error("Finished error:", err);
-    alert("Error finishing request.");
-  }
-};
-    
     function abbreviate(id){ return id ? ('#PPS-' + id.slice(0,8).toUpperCase()) : '#PPS-XXXX'; }
+    
     async function fetchAndRender(){
       try{
         const { data: items, error } = await window.supabaseClient
@@ -245,6 +213,7 @@ window.finishItem = async function(id) {
         render(items||[]);
       }catch(err){ console.error('Error fetching archive:', err); }
     }
+
     window.activateItem = async function(id){
       try{
         const { error } = await window.supabaseClient
@@ -255,18 +224,7 @@ window.finishItem = async function(id) {
         fetchAndRender();
       }catch(err){ console.error('Error activating item:', err); }
     }
-    window.deleteItem = async function(id){
-      if(confirm('Delete permanently?')){
-        try{
-          const { error } = await window.supabaseClient
-            .from('pps_queue')
-            .delete()
-            .eq('request_id', id);
-          if(error) throw error;
-          fetchAndRender();
-        }catch(err){ console.error('Error deleting item:', err); }
-      }
-    }
+
     function render(data){
       var tbody=document.getElementById('archiveBody');
       var countLabel=document.getElementById('archiveCount');
@@ -293,6 +251,7 @@ window.finishItem = async function(id) {
         tbody.appendChild(tr);
       });
     }
+
     function subscribeToChanges(){
       window.supabaseClient
         .channel('pps_queue_changes_archive')

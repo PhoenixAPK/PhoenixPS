@@ -687,7 +687,7 @@ async function downloadInvoice() {
     var q = loadQueue(); var req = q.find(function(r){ return r.request_id === id; }); if(!req) return;
     
     // Logic to set correctly between Client and Entrepreneur Admin mode based on the saved sourceMode
-    var mode = (req.meta?.mode || 'client').toLowerCase();
+    var mode = (req.sourceMode || 'client').toLowerCase();
     if(mode === 'entrepreneur') startEntrepreneurMode(); else startClientMode();
 
     document.getElementById('clientName').value = req.client?.name || '';

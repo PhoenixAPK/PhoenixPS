@@ -3,141 +3,259 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phoenix Printing Solutions | Archive</title>
+  <title>Phoenix Printing Solutions | Redefine Your Space</title>
   <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="../assets/js/auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/js/supabase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    :root { --glass: rgba(0,0,0,0.6); --glass-border: rgba(255,255,255,0.2); --pps-green:#066d44; --pps-admin-green:#046C4E; }
+    :root { --glass: rgba(0,0,0,0.6); --glass-border: rgba(255,255,255,0.2); --electric-lime:#00FF87; --fire-orange:#ff4d00; --fire-yellow:#ffcc00; --pps-green:#066d44; --pps-admin-green:#046C4E; }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Plus Jakarta Sans',sans-serif;background:#020605 url('../assets/images/PPS Background.png') no-repeat center center fixed;background-size:cover;color:#fff;padding-top:140px;padding-bottom:68px}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#020605 url('../assets/images/PPS Background.png') no-repeat center center fixed;background-size:cover;color:#fff;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding-top:140px;padding-bottom:68px}
+    body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:-1}
     nav{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);position:fixed;width:100%;top:0;z-index:1000;border-bottom:1px solid var(--glass-border)}
     .brand-name{font-family:'Syncopate',sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:2px;text-transform:uppercase;color:#fff;text-shadow:0 0 5px #fff,0 0 10px #ffcc00,0 0 20px #ff4d00}
-    .nav-btn{text-decoration:none;color:#fff;font-family:'Syncopate',sans-serif;font-size:.7rem;font-weight:700;padding:10px 18px;border-radius:5px;border:1px solid transparent}
-    .queue-container{width:90%;max-width:1200px;background:#fff;border-radius:12px;margin:auto;color:#333;overflow:hidden}
-    .queue-header-box{background:var(--pps-green);color:#fff;padding:25px 30px;display:flex;justify-content:space-between;align-items:center;font-family:'Syncopate'}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:20px 30px;border-bottom:1px solid #eee;text-align:left}
-    .btn-action{border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;color:white;text-transform:uppercase}
-    .activate-btn{background:#2e7d32} .delete-btn{background:#c62828}
+    .nav-buttons{display:flex;gap:20px}
+    .nav-btn{text-decoration:none;color:#fff;font-family:'Syncopate',sans-serif;font-size:.7rem;font-weight:700;padding:10px 18px;border-radius:5px;transition:.3s;border:1px solid transparent}
+    .nav-btn:hover{color:var(--electric-lime);border-color:var(--electric-lime);background:rgba(0,255,135,0.1)}
+    .main-content{width:100%;display:flex;justify-content:center}
+    .queue-container{width:90%;max-width:1200px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e0e0e0;box-shadow:0 4px 20px rgba(0,0,0,0.08);color:#333}
+    .queue-header-box{background:var(--pps-green);color:#fff;padding:25px 30px;display:flex;justify-content:space-between;align-items:center;font-family:'Syncopate';letter-spacing:3px}
+    .queue-header-box h1{margin:0;font-size:0.9rem}
+    .stats{font-size:0.75rem;background:rgba(255,255,255,0.2);padding:5px 15px;border-radius:20px;font-family:'Roboto'}
+    table{width:100%;border-collapse:collapse;text-align:left}
+    thead{background:#fafafa;font-family:'Syncopate';font-size:0.65rem;letter-spacing:2px;color:#888}
+    th{padding:20px 30px;font-weight:700;border-bottom:1px solid #e0e0e0}
+    td{padding:18px 30px;border-bottom:1px solid #eee;font-size:0.85rem;color:#333}
+    tr:hover td{background:#f9f9f9}
+    .ref-code{font-family:monospace;font-weight:bold;color:var(--pps-green)}
+    .action-cell{display:flex;gap:10px;align-items:center}
+    .btn-action{border:none;padding:8px 16px;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;color:white;text-transform:uppercase;transition:opacity .2s}
+    .activate-btn{background:#2e7d32}
+    .delete-btn{background:#c62828}
+    .btn-action:hover{opacity:0.8}
+    footer{position:fixed;bottom:0;left:0;right:0;height:68px;background:rgba(0,0,0,0.85);border-top:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;z-index:1000}
+    .footer-logo{height:30px;margin-right:15px}
+    footer p{font-family:'Syncopate';font-size:0.62rem;letter-spacing:3px;opacity:0.7;color:#fff;margin:0}
 
-    /* PDF RENDER STYLES - IDENTICAL TO ADMIN */
-    #hiddenInvoiceWrap { position: absolute; left: -9999px; top: 0; width: 800px; background: #fff; color: #333; }
-    .invoice-container { padding: 40px; }
-    .invoice-header { text-align: center; border-bottom: 2px solid var(--pps-admin-green); padding-bottom: 20px; }
-    .invoice-header h1 { font-family: 'Syncopate'; font-size: 22px; color: var(--pps-admin-green); }
-    .invoice-info-grid { display: flex; justify-content: space-between; margin: 30px 0; }
-    .info-col { font-size: 14px; line-height: 1.6; }
-    .info-label { font-weight: 800; color: var(--pps-admin-green); width: 120px; display: inline-block; }
-    .pdf-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    .pdf-table th { background: var(--pps-admin-green); color: #fff; padding: 12px; font-size: 12px; }
-    .pdf-table td { border: 1px solid #ddd; padding: 12px; text-align: center; font-size: 12px; }
-    .pdf-total-row { background: #f0fdf4; font-weight: bold; }
-    .grand-total-box { text-align: right; padding: 20px; background: #046C4E; color: #fff; border-radius: 8px; margin-top: 20px; }
+    /* HIDDEN RENDER AREA FOR PDF GENERATION (Admin Design Styles) */
+    #hiddenInvoiceWrap { position: absolute; left: -9999px; top: 0; width: 800px; color: #333; }
+    .invoice-container { padding: 30px; background: #ffffff; border-radius: 12px; }
+    .invoice-header { text-align: center; margin-bottom: 8px; display: flex; flex-direction: column; align-items: center; }
+    .invoice-header img { max-height: 60px; margin-bottom: 8px; }
+    .invoice-header h1 { margin: 0; font-size: 22px; font-weight: 700; color: var(--pps-admin-green); }
+    .invoice-title { text-align: center; font-weight: 700; font-size: 18px; margin: 20px 0 8px; text-transform: uppercase; color: var(--pps-admin-green); }
+    .invoice-client-info { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+    .invoice-client-line { display: flex; justify-content: center; width: 100%; max-width: 350px; font-size: 14px; color: #444; line-height: 1.6; }
+    .invoice-client-label { width: 110px; text-align: right; font-weight: 700; margin-right: 10px; font-size: 13px; }
+    .invoice-client-value { text-align: left; flex: 1; font-size: 13px; }
+    .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .invoice-table th, .invoice-table td { border: 1px solid #e0e0e0; padding: 8px; text-align: center; font-size: 12px; }
+    .invoice-table th { background: var(--pps-admin-green); color: #fff; font-weight: 700; }
+    .invoice-table td.total { font-weight: bold; background: #cdeacf; color: #333; }
+    .invoice-additional-costs { width: 50%; margin-left: auto; font-size: 13px; margin-bottom: 20px; }
+    .invoice-additional-costs table { width: 100%; }
+    .invoice-additional-costs td { padding: 6px; text-align: left; }
+    .invoice-additional-costs td.value { text-align: right; }
+    .invoice-grand-total { font-weight: bold; background: #cdeacf; text-align: right; padding: 8px; margin-top: 8px; font-size: 14px; }
+    .invoice-footer { display: flex; font-size: 11px; justify-content: center; gap: 15px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; color: #666; }
   </style>
 </head>
 <body>
   <nav>
     <span class="brand-name">Phoenix Printing Solutions</span>
     <div class="nav-buttons">
+      <a href="pendingqueue.html" class="nav-btn">PENDING QUEUE</a>
+      <a href="inprogress.html" class="nav-btn">IN PROGRESS</a>
+      <a href="admininvoice.html" class="nav-btn">INVOICE</a>
       <a href="archive.html" class="nav-btn">ARCHIVE</a>
       <a href="#" class="nav-btn" onclick="logoutAdmin()">LOGOUT</a>
     </div>
   </nav>
 
-  <div class="queue-container">
-    <div class="queue-header-box">
-      <h1>ARCHIVE HISTORY</h1>
-      <div id="archiveCount">0 Items</div>
+  <div class="main-content">
+    <div class="queue-container">
+      <div class="queue-header-box">
+        <h1>ARCHIVE HISTORY</h1>
+        <div class="stats" id="archiveCount">0 Items</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Client / Business Name</th>
+            <th>City</th>
+            <th>Units</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="archiveBody"></tbody>
+      </table>
     </div>
-    <table>
-      <thead><tr><th>Reference</th><th>Client</th><th>City</th><th>Units</th><th>Action</th></tr></thead>
-      <tbody id="archiveBody"></tbody>
-    </table>
   </div>
 
   <div id="hiddenInvoiceWrap"></div>
 
+  <footer>
+    <img src="../assets/images/PPS logo.png" alt="Logo" class="footer-logo">
+    <p>© 2026 PHOENIX PRINTING SOLUTIONS</p>
+  </footer>
+
   <script>
+  (function(){
     const LOGO_PATH = '../assets/images/PPS logo.png';
+    const cityData = [ { city: "Rabat", distance_km: 0 }, { city: "Salé", distance_km: 0 }, { city: "Temara", distance_km: 15 }, { city: "Skhirat", distance_km: 30 }, { city: "Kenitra (Kénitra)", distance_km: 45 }, { city: "Bouznika", distance_km: 45 }, { city: "Mohammedia", distance_km: 60 }, { city: "Sidi Yahya El Gharb", distance_km: 60 }, { city: "Tifelt", distance_km: 70 }, { city: "Ben Slimane", distance_km: 70 }, { city: "Ain Harrouda", distance_km: 80 }, { city: "Sidi Slimane", distance_km: 80 }, { city: "Khemisset", distance_km: 85 }, { city: "Casablanca", distance_km: 90 }, { city: "Souk El Arbaa", distance_km: 90 }, { city: "Sidi Kacem", distance_km: 100 }, { city: "Dar Bouazza", distance_km: 110 }, { city: "Berrechid", distance_km: 120 }, { city: "Settat", distance_km: 140 }, { city: "Meknes (Meknès)", distance_km: 145 }, { city: "Ouazzane", distance_km: 150 }, { city: "Azemmour", distance_km: 150 }, { city: "El Hajeb", distance_km: 160 }, { city: "Khouribga", distance_km: 160 }, { city: "Larache", distance_km: 160 }, { city: "Asilah", distance_km: 170 }, { city: "El Jadida", distance_km: 170 }, { city: "Ksar El Kebir", distance_km: 180 }, { city: "Azrou", distance_km: 180 }, { city: "Oued Zem", distance_km: 190 }, { city: "Ifrane", distance_km: 190 }, { city: "Sidi Bennour", distance_km: 190 }, { city: "Fes (Fès)", distance_km: 200 }, { city: "Kasbat Tadla", distance_km: 210 }, { city: "Moulay Yacoub", distance_km: 210 }, { city: "Sefrou", distance_km: 220 }, { city: "M'Rirt", distance_km: 220 }, { city: "El Kelaa Des Sraghna", distance_km: 230 }, { city: "Chefchaouen", distance_km: 230 }, { city: "Fquih Ben Salah", distance_km: 240 }, { city: "Tetouan (Tétouan)", distance_km: 250 }, { city: "Ben Guerir", distance_km: 250 }, { city: "Youssoufia", distance_km: 250 }, { city: "Martil", distance_km: 260 }, { city: "Beni Mellal", distance_km: 270 }, { city: "M'diq", distance_km: 270 }, { city: "Tangier (Tanger)", distance_km: 280 }, { city: "Khenifra", distance_km: 280 }, { city: "Taounate", distance_km: 280 }, { city: "Boulemane", distance_km: 280 }, { city: "Fnideq", distance_km: 290 }, { city: "Safi", distance_km: 320 }, { city: "Marrakesh (Marrakech)", distance_km: 330 }, { city: "Azilal", distance_km: 340 }, { city: "Taza", distance_km: 350 }, { city: "Midelt", distance_km: 350 }, { city: "Tahannaout", distance_km: 350 }, { city: "Chichaoua", distance_km: 380 }, { city: "Al Hoceima", distance_km: 400 }, { city: "Guercif", distance_km: 400 }, { city: "Imzouren", distance_km: 410 }, { city: "Ouarzazate", distance_km: 450 }, { city: "Taroudant", distance_km: 470 }, { city: "Essaouira", distance_km: 470 }, { city: "Taourirt", distance_km: 480 }, { city: "Driouch", distance_km: 480 }, { city: "Oulad Teima", distance_km: 490 }, { city: "Tinghir", distance_km: 490 }, { city: "Biougra", distance_km: 490 }, { city: "Agadir", distance_km: 500 }, { city: "Lqliaa", distance_km: 500 }, { city: "Dcheira El Jihadia", distance_km: 500 }, { city: "Inezgane", distance_km: 505 }, { city: "Ait Melloul", distance_km: 510 }, { city: "Al Aaroui", distance_km: 510 }, { city: "Nador", distance_km: 520 }, { city: "Bni Anṣār (Beni Ensar)", distance_km: 540 }, { city: "Errachidia", distance_km: 550 }, { city: "Zaio", distance_km: 560 }, { city: "Tiznit", distance_km: 590 }, { city: "Arfoud", distance_km: 590 }, { city: "Oujda", distance_km: 600 }, { city: "Tata", distance_km: 600 }, { city: "L'Aaioune Sidi Mellouk", distance_km: 600 }, { city: "Jerada", distance_km: 640 }, { city: "Zagora", distance_km: 650 }, { city: "Sidi Ifni", distance_km: 670 }, { city: "Bouarfa", distance_km: 680 }, { city: "Guelmim", distance_km: 750 }, { city: "Figuig", distance_km: 750 }, { city: "Tan-Tan", distance_km: 850 }, { city: "Tarfaya", distance_km: 950 }, { city: "Smara", distance_km: 1000 }, { city: "Laâyoune", distance_km: 1050 }, { city: "Boujdour", distance_km: 1200 }, { city: "Dakhla", distance_km: 1700 } ];
+
+    function getDistance(city){ const d = cityData.find(it => it.city === city); return d ? d.distance_km : 0; }
+    function getChargeableDistance(d){ return (d >= 51) ? d * 2 : d; }
 
     async function generateVisualInvoicePDF(req) {
       const isEnt = req.is_entrepreneur || false;
       const basePrice = isEnt ? 200 : 250;
       const city = req.location?.city || "Rabat";
-      const phone = req.client?.phone || req.business?.phone || "N/A";
+      const d = getDistance(city);
+      const dist = getChargeableDistance(d);
       
-      let totalArea = 0;
-      const rows = (req.workspaces || []).map((ws, i) => {
-        const area = (parseFloat(ws.height) * parseFloat(ws.width)) || 0;
-        let charge = area <= 1 ? 1 : area <= 1.5 ? 1.5 : area <= 2 ? 2 : Math.ceil(area * 2) / 2;
-        totalArea += charge;
-        return `<tr><td>WS ${i+1}</td><td>${ws.height}x${ws.width}</td><td>${area.toFixed(2)}</td><td>${charge.toFixed(2)}</td><td>${basePrice}</td><td>${(charge*basePrice).toFixed(2)}</td></tr>`;
+      // Calculate costs using preserved admin formulas
+      let totalChargeArea = 0;
+      const rowsHtml = (req.workspaces || []).map((ws, i) => {
+        const h = parseFloat(ws.height) || 0;
+        const w = parseFloat(ws.width) || 0;
+        const actual = h * w;
+        let charge = 0;
+        if(actual > 0){
+          if(actual <= 1) charge = 1;
+          else if(actual <= 1.49) charge = 1.5;
+          else if(actual <= 1.99) charge = 2;
+          else charge = Math.ceil(actual * 2) / 2;
+        }
+        totalChargeArea += charge;
+        return `<tr><td>Workspace ${i+1}</td><td>${h.toFixed(2)}×${w.toFixed(2)}</td><td>${actual.toFixed(2)}</td><td>${charge.toFixed(2)}</td><td>${basePrice.toFixed(2)}</td><td>${(charge*basePrice).toFixed(2)}</td></tr>`;
       }).join('');
 
-      const travel = (parseFloat(req.costs?.fuelPrice) || 0) + (parseFloat(req.costs?.tollPrice) || 0);
-      const grandTotal = (totalArea * basePrice) + travel;
+      const baseCost = totalChargeArea * basePrice;
+      const fuelCost = dist * (5/100) * (req.costs?.fuelPrice || 0);
+      const toll = parseFloat(req.costs?.tollPrice) || 0;
+      const accom = parseFloat(req.costs?.accommodationPrice) || 0;
+      const travel = fuelCost + toll + accom;
+      const grand = baseCost + travel;
 
-      document.getElementById('hiddenInvoiceWrap').innerHTML = `
+      // Render hidden HTML identical to Admin Invoice
+      const wrap = document.getElementById('hiddenInvoiceWrap');
+      wrap.innerHTML = `
         <div class="invoice-container">
-          <div class="invoice-header"><h1>PHOENIX PRINTING SOLUTIONS</h1></div>
-          <div class="invoice-info-grid">
-            <div class="info-col">
-              <div><span class="info-label">${isEnt ? 'BUSINESS' : 'CLIENT'}:</span> ${req.client?.name || 'Customer'}</div>
-              <div><span class="info-label">PHONE:</span> ${phone}</div>
-              <div><span class="info-label">CITY:</span> ${city}</div>
-            </div>
+          <div class="invoice-header"><img src="${LOGO_PATH}" alt="Logo" /><h1>Phoenix Printing Solutions</h1></div>
+          <div class="invoice-title">Invoice: ${isEnt ? 'Business' : 'Client'} - ${req.client?.name}</div>
+          <div class="invoice-client-info">
+            <div class="invoice-client-line"><div class="invoice-client-label">${isEnt ? 'Business Name:' : 'Client Name:'}</div><div class="invoice-client-value">${req.client?.name}</div></div>
+            <div class="invoice-client-line"><div class="invoice-client-label">Phone:</div><div class="invoice-client-value">${req.client?.phone}</div></div>
+            <div class="invoice-client-line"><div class="invoice-client-label">City:</div><div class="invoice-client-value">${city}</div></div>
+            <div class="invoice-client-line" style="font-weight:bold; color:#046C4E;"><div class="invoice-client-label">Distance:</div><div class="invoice-client-value">${dist.toFixed(0)} km</div></div>
           </div>
-          <table class="pdf-table">
-            <thead><tr><th>ITEM</th><th>SIZE</th><th>ACTUAL</th><th>CHARGE</th><th>PRICE</th><th>COST</th></tr></thead>
-            <tbody>${rows}</tbody>
+          <table class="invoice-table">
+            <thead><tr><th>Item</th><th>H×W</th><th>Actual</th><th>Charge</th><th>Price</th><th>Cost</th></tr></thead>
+            <tbody>${rowsHtml}<tr class="total"><td colspan="3">Total Area</td><td>${totalChargeArea.toFixed(2)}</td><td></td><td>${baseCost.toFixed(2)}</td></tr></tbody>
           </table>
-          <div class="grand-total-box">
-            <div>TRAVEL: ${travel.toFixed(2)} DH</div>
-            <div style="font-size: 20px; margin-top:10px;">GRAND TOTAL: ${grandTotal.toFixed(2)} DH</div>
+          <div class="invoice-additional-costs">
+            <table>
+              <tr><td>Travel Total</td><td class="value">${travel.toFixed(2)}</td></tr>
+              <tr><td><strong>Grand Total</strong></td><td class="value"><strong>${grand.toFixed(2)} DH</strong></td></tr>
+            </table>
           </div>
+          <div class="invoice-footer"><div>Phoenix Printing Solutions</div><div>0667336303</div></div>
         </div>`;
 
-      const canvas = await html2canvas(document.getElementById('hiddenInvoiceWrap'), { scale: 2 });
+      const canvas = await html2canvas(wrap, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+      const imgW = pdf.internal.pageSize.getWidth();
+      const imgH = (canvas.height * imgW) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, imgW, imgH);
       return pdf.output("blob");
     }
 
-    async function finishItem(id) {
-      try {
-        const { data: req } = await window.supabaseClient.from("pps_queue").select("*").eq("request_id", id).single();
-        const pdfBlob = await generateVisualInvoicePDF(req);
-        
-        const cleanName = (req.client?.name || "User").replace(/[^a-z0-9]/gi, '_');
-        const fileName = `PPS-${cleanName}-${id.slice(0,5)}.pdf`;
+    async function uploadPdfToSupabase(req, pdfBlob) {
+      const name = (req.client?.name || "Customer").replace(/\s+/g, '_');
+      const city = (req.location?.city || "Rabat").replace(/\s+/g, '_');
+      const shortId = req.request_id.slice(0, 5).toUpperCase();
+      const fileName = `PPS-${name}-${city}-${shortId}.pdf`;
+      const filePath = `archive/${fileName}`;
 
-        await window.supabaseClient.storage.from("Archive-invoice").upload(`archive/${fileName}`, pdfBlob, { upsert: true });
-        await window.supabaseClient.from("pps_queue").delete().eq("request_id", id);
-        
-        location.reload();
-      } catch (err) { alert("Error finishing item."); }
+      const { data, error } = await window.supabaseClient.storage
+        .from("Archive-invoice")
+        .upload(filePath, pdfBlob, { contentType: "application/pdf", upsert: true });
+      if (error) throw error;
+      return data;
     }
 
-    async function fetchAndRender() {
-      const { data } = await window.supabaseClient.from('pps_queue').select('*').eq('status','archived');
-      const tbody = document.getElementById('archiveBody');
-      tbody.innerHTML = data.map(req => `
-        <tr>
-          <td>#${req.request_id.slice(0,8)}</td>
-          <td>${req.client?.name || 'N/A'}</td>
+    window.finishItem = async function(id) {
+      try {
+        const { data: req, error } = await window.supabaseClient.from("pps_queue").select("*").eq("request_id", id).single();
+        if (error) throw error;
+        
+        const pdfBlob = await generateVisualInvoicePDF(req);
+        await uploadPdfToSupabase(req, pdfBlob);
+        
+        const { error: delErr } = await window.supabaseClient.from("pps_queue").delete().eq("request_id", id);
+        if (delErr) throw delErr;
+        
+        fetchAndRender();
+        alert("Archived! PDF saved with unique identifier.");
+      } catch (err) {
+        console.error("Archive Error:", err);
+        alert("Error during archiving.");
+      }
+    };
+
+    function abbreviate(id){ return id ? ('#PPS-' + id.slice(0,8).toUpperCase()) : '#PPS-XXXX'; }
+    async function fetchAndRender(){
+      try{
+        const { data: items, error } = await window.supabaseClient.from('pps_queue').select('*').eq('status','archived').order('created_at',{ascending:false});
+        if(error) throw error;
+        render(items||[]);
+      }catch(err){ console.error('Error fetching archive:', err); }
+    }
+    window.activateItem = async function(id){
+      try{
+        const { error } = await window.supabaseClient.from('pps_queue').update({ status:'pending', created_at: new Date().toISOString() }).eq('request_id', id);
+        if(error) throw error;
+        fetchAndRender();
+      }catch(err){ console.error('Error activating item:', err); }
+    }
+    function render(data){
+      var tbody=document.getElementById('archiveBody');
+      var countLabel=document.getElementById('archiveCount');
+      if(!tbody) return;
+      tbody.innerHTML='';
+      countLabel.innerText = data.length + ' Archived Items';
+      if(data.length===0){
+        tbody.innerHTML='<tr><td colspan="5" style="text-align:center; padding:50px; opacity:0.5;">No archived items.</td></tr>';
+        return;
+      }
+      data.forEach(function(req){
+        var tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td class="ref-code">${abbreviate(req.request_id)}</td>
+          <td><strong>${req.client?.name || 'N/A'}</strong></td>
           <td>${req.location?.city || 'N/A'}</td>
           <td>${req.workspaces?.length || 0} Units</td>
           <td>
-            <button class="btn-action activate-btn" onclick="finishItem('${req.request_id}')">FINISHED</button>
-          </td>
-        </tr>`).join('');
+            <div class="action-cell">
+              <button class="btn-action activate-btn" onclick="activateItem('${req.request_id}')">Activate</button>
+              <button class="btn-action delete-btn" onclick="finishItem('${req.request_id}')">Finished</button>
+            </div>
+          </td>`;
+        tbody.appendChild(tr);
+      });
     }
-
-    document.addEventListener('DOMContentLoaded', fetchAndRender);
+    function subscribeToChanges(){
+      window.supabaseClient.channel('pps_queue_changes_archive').on('postgres_changes',{event:'*',table:'pps_queue'},()=>fetchAndRender()).subscribe();
+    }
+    document.addEventListener('DOMContentLoaded',()=>{ fetchAndRender(); subscribeToChanges(); });
+  })();
   </script>
 </body>
 </html>

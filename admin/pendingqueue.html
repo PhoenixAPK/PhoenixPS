@@ -70,7 +70,7 @@
   <script>
   (function(){
     function handleRequestClick(id, mode) {
-      const target = `admininvoice.html?request_id=${id}&mode=${mode}`;
+      const target = `admininvoice.html?request_id=${id}`;
       try {
         // Fire-and-forget update: do NOT block navigation
         window.supabaseClient
@@ -105,7 +105,7 @@
       }
       items.forEach(req => {
         const tr = document.createElement('tr');
-        const mode = req.sourceMode || 'client';
+        const mode = req.sourceMode;
         tr.onclick = () => handleRequestClick(req.request_id, mode);
         const time = req.created_at ? new Date(req.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--:--';
         const modeClass = mode === 'entrepreneur' ? 'mode-entrepreneur' : 'mode-client';

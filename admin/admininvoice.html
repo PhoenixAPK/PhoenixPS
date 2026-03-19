@@ -482,7 +482,16 @@ function updateProjectDuration() {
   document.getElementById("projectDurationOutput").value = totalDays > 0 ? `${totalDays} Day(s), ${remainingHours} Hour(s)` : `${totalHours.toFixed(1)} Hour(s)`;
 }
 function setModeLabel(mode) { document.getElementById("modeLabel").innerText = mode; }
-function startClientMode() { isEntrepreneur = false; setModeLabel("Client Mode"); document.getElementById("modePage").style.display = "none"; document.getElementById("calculatorPage").style.display = "block"; populateCitySelect(); handleCity(); }
+function startClientMode() {
+    isEntrepreneur = false;
+    setModeLabel("Client Mode");
+    document.getElementById("modePage").style.display = "none";
+    document.getElementById("calculatorPage").style.display = "block";
+
+    populateCitySelect();
+    document.getElementById("clientCity").onchange = handleCity;   // ✔ THIS FIXES AUTO-FILL
+    handleCity();
+}
 function startEntrepreneurMode() { isEntrepreneur = true; setModeLabel("Entrepreneur Mode"); document.getElementById("modePage").style.display = "none"; document.getElementById("calculatorPage").style.display = "block"; populateCitySelect(); handleCity(); }
 function returnToMode() { document.getElementById("calculatorPage").style.display = "none"; document.getElementById("modePage").style.display = "flex"; }
 function populateCitySelect() { const clientCityEl = document.getElementById("clientCity"); clientCityEl.innerHTML = '<option value="">Select City</option>'; cityData.sort((a, b) => a.city.localeCompare(b.city)).forEach(item => { const option = document.createElement("option"); option.value = item.city; option.text = item.city; clientCityEl.appendChild(option); }); }

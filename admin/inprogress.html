@@ -104,13 +104,19 @@
         fetchAndRender();
       }catch(err){ console.error('Error moving back:', err); }
     };
-    window.moveToArchive=async(id)=>{
-      try{
-        const { error } = await window.supabaseClient
-          .from('pps_queue')
-          .update({ status:'archived' })
-          .eq('request_id', id);
-        if(error) throw error;
+   window.moveToArchive = async (id) => {
+  try {
+    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-archive", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: id })
+    });
+
+    fetchAndRender(); // refresh the table
+  } catch (err) {
+    console.error("Error moving to archive:", err);
+  }
+};
         fetchAndRender();
       }catch(err){ console.error('Error moving to archive:', err); }
     };

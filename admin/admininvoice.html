@@ -521,6 +521,8 @@ function handleCity() {
   }
 }
 function resetCalculator() {
+    // Create new Invoice ID
+    currentInvoiceID = generateInvoiceID();
     // Keep the current mode (Client or Entrepreneur)
     const currentMode = isEntrepreneur ? "entrepreneur" : "client";
 

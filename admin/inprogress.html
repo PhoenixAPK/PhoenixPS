@@ -96,11 +96,11 @@
     }
     window.moveBack=async(id)=>{
       try{
-        const { error } = await window.supabaseClient
-          .from('pps_queue')
-          .update({ status:'pending', created_at: new Date().toISOString() })
-          .eq('request_id', id);
-        if(error) throw error;
+        await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-back", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ request_id: id })
+});
         fetchAndRender();
       }catch(err){ console.error('Error moving back:', err); }
     };

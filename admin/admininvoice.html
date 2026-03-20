@@ -530,7 +530,24 @@ function handleCity() {
     updateTotalPictureCount();
   }
 }
-function resetCalculator() { window.location.reload(); }
+function resetCalculator() {
+    const newId = crypto.randomUUID();
+
+    document.getElementById("clientName").value = "";
+    document.getElementById("clientContact").value = "";
+    document.getElementById("clientEmail").value = "";
+    document.getElementById("clientAddress").value = "";
+    document.getElementById("clientCity").value = "";
+    document.getElementById("clientRegion").value = "";
+    document.getElementById("distanceInput").value = "";
+    document.getElementById("mandatoryPicturesOutput").value = "";
+    document.getElementById("projectDurationOutput").value = "";
+
+    document.getElementById("fuelPrice").value = "";
+    document.getElementById("tollPrice").value = "";
+    document.getElementById("accommodationPrice").value = "";
+
+    document.getElementById("leftPicture
 function calculateAreas() {
   let totalChargeable = 0;
   document.querySelectorAll(".picture-row").forEach(row => {

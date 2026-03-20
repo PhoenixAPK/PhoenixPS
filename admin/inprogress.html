@@ -114,13 +114,7 @@
         fetchAndRender();
       }catch(err){ console.error('Error moving to archive:', err); }
     };
-    function subscribeToChanges(){
-      window.supabaseClient
-        .channel('pps_queue_changes_inprogress')
-        .on('postgres_changes',{event:'*',table:'pps_queue'},()=>fetchAndRender())
-        .subscribe();
-    }
-    document.addEventListener('DOMContentLoaded',()=>{ fetchAndRender(); subscribeToChanges(); });
+document.addEventListener('DOMContentLoaded', fetchAndRender);
   })();
   </script>
 </body>

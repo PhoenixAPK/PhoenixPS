@@ -511,7 +511,38 @@ function handleCity() {
     updateTotalPictureCount();
   }
 }
-function resetCalculator() { window.location.reload(); }
+function resetCalculator() {
+    // Keep the current mode (Client or Entrepreneur)
+    const currentMode = isEntrepreneur ? "entrepreneur" : "client";
+
+    // 1. Clear all client fields
+    document.getElementById("clientName").value = "";
+    document.getElementById("clientContact").value = "";
+    document.getElementById("clientEmail").value = "";
+    document.getElementById("clientAddress").value = "";
+    document.getElementById("clientRegion").value = "";
+    document.getElementById("distanceInput").value = "";
+    document.getElementById("mandatoryPicturesOutput").value = "";
+    document.getElementById("projectDurationOutput").value = "";
+
+    // 2. Reset city selection
+    document.getElementById("clientCity").value = "";
+
+    // 3. Clear picture rows
+    document.getElementById("leftPictureContainer").innerHTML = "";
+    document.getElementById("rightPictureContainer").innerHTML = "";
+
+    // 4. Reset cost fields
+    document.getElementById("fuelPrice").value = "";
+    document.getElementById("tollPrice").value = "";
+    document.getElementById("accommodationPrice").value = "";
+
+    // 5. Clear invoice display
+    document.getElementById("invoiceDisplay").innerHTML = "";
+
+    // 6. Restore mode label
+    setModeLabel(currentMode === "entrepreneur" ? "Entrepreneur Mode" : "Client Mode");
+}
 function calculateAreas() {
   let totalChargeable = 0;
   document.querySelectorAll(".picture-row").forEach(row => {

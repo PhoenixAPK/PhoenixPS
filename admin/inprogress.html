@@ -4,11 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Phoenix Printing Solutions | Redefine Your Space</title>
-  https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;800&family=Roboto:wght@400;500;700&display=swap
-  ../assets/js/auth.js</script>
-  https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.7
-  ../assets/js/supabase.js</script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <script src="../assets/js/auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.7"></script>
+  <script src="../assets/js/supabase.js"></script>
   <style>
     :root { --glass: rgba(0,0,0,0.6); --glass-border: rgba(255,255,255,0.2); --electric-lime:#00FF87; --fire-orange:#ff4d00; --fire-yellow:#ffcc00; --pps-green:#066d44; }
     *{margin:0;padding:0;box-sizing:border-box}
@@ -36,19 +35,17 @@
     footer p{font-family:'Syncopate',sans-serif;font-size:.62rem;letter-spacing:3px;color:#fff;opacity:.7;margin:0}
   </style>
 </head>
-
 <body>
   <nav>
     <span class="brand-name">Phoenix Printing Solutions</span>
     <div class="nav-buttons">
-      pendingqueue.htmlPENDING QUEUE</a>
-      inprogress.htmlIN PROGRESS</a>
-      admininvoice.htmlINVOICE</a>
-      archive.htmlARCHIVE</a>
-      #LOGOUT</a>
+      <a href="pendingqueue.html" class="nav-btn">PENDING QUEUE</a>
+      <a href="inprogress.html" class="nav-btn">IN PROGRESS</a>
+      <a href="admininvoice.html" class="nav-btn">INVOICE</a>
+      <a href="archive.html" class="nav-btn">ARCHIVE</a>
+      <a href="#" class="nav-btn" onclick="logoutAdmin()">LOGOUT</a>
     </div>
   </nav>
-
   <div class="queue-container">
     <div class="table-title"><span>IN PROGRESS QUEUE</span></div>
     <table>
@@ -58,15 +55,12 @@
       <tbody id="inProgressBody"></tbody>
     </table>
   </div>
-
   <footer>
-    ../assets/images/PPS logo.png
+    <img src="../assets/images/PPS logo.png" alt="Logo" class="footer-logo">
     <p>© 2026 PHOENIX PRINTING SOLUTIONS</p>
   </footer>
-
   <script>
   (function(){
-
     async function fetchAndRender(){
       try{
         const { data: items, error } = await window.supabaseClient
@@ -76,20 +70,15 @@
           .order('created_at',{ascending:false});
         if(error) throw error;
         render(items||[]);
-      }catch(err){
-        console.error('Error fetching in-progress:', err);
-      }
+      }catch(err){ console.error('Error fetching in-progress:', err); }
     }
-
     function render(items){
       const tbody=document.getElementById('inProgressBody');
       tbody.innerHTML='';
-
       if(items.length===0){
         tbody.innerHTML='<tr><td colspan="4" style="text-align:center; padding:50px; opacity:0.5;">No active requests in progress.</td></tr>';
         return;
       }
-
       items.forEach(req=>{
         const tr=document.createElement('tr');
         tr.innerHTML=`
@@ -105,41 +94,34 @@
         tbody.appendChild(tr);
       });
     }
-
-    /* FIXED MOVE-BACK FUNCTION */
-    window.moveBack = async (id) => {
-      try {
+    window.moveBack=async(id)=>{
+      try{
         await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-back", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ request_id: id })
-        });
-
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ request_id: id })
+});
         fetchAndRender();
-      } catch (err) {
-        console.error("Error moving back:", err);
-      }
+      }catch(err){ console.error('Error moving back:', err); }
     };
+   window.moveToArchive = async (id) => {
+  try {
+    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-archive", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: id })
+    });
 
-    /* FIXED MOVE-TO-ARCHIVE FUNCTION */
-    window.moveToArchive = async (id) => {
-      try {
-        await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-archive", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ request_id: id })
-        });
-
+    fetchAndRender(); // refresh the table
+  } catch (err) {
+    console.error("Error moving to archive:", err);
+  }
+};
         fetchAndRender();
-      } catch (err) {
-        console.error("Error moving to archive:", err);
-      }
+      }catch(err){ console.error('Error moving to archive:', err); }
     };
-
-    document.addEventListener('DOMContentLoaded', fetchAndRender);
-
+document.addEventListener('DOMContentLoaded', fetchAndRender);
   })();
   </script>
-
 </body>
 </html>

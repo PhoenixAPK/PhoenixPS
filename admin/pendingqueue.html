@@ -69,6 +69,20 @@
   </footer>
   <script>
   (function(){
+    window.moveToInProgress = async (id) => {
+  try {
+    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-inprogress", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1eW1hYnJrd3Rwdmhyb3BjdnFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTEyOTUsImV4cCI6MjA4ODg2NzI5NX0.kg7WvMRblzVf2iaQbt4Zz7DuNDgHGn9AKFHM_maGiTk"
+      },
+      body: JSON.stringify({ request_id: id })
+    });
+  } catch (err) {
+    console.error("Error moving to in-progress:", err);
+  }
+};
     function handleRequestClick(id, mode) {
       const target = `admininvoice.html?request_id=${id}`;
       try {

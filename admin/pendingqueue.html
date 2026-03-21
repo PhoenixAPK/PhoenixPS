@@ -140,18 +140,25 @@
     <td><span class="mode-tag ${modeClass}">${mode}</span></td>
     <td>${time}</td>`;
 
-  tbody.appendChild(tr);
+tbody.appendChild(tr);
 });
 
-    function subscribeToChanges(){
+<script>
+  (function () {
+
+    function subscribeToChanges() {
       window.supabaseClient
         .channel('pps_queue_changes')
         .on('postgres_changes', { event: '*', table: 'pps_queue' }, () => fetchAndRender())
         .subscribe();
     }
 
-    document.addEventListener('DOMContentLoaded', () => { fetchAndRender(); subscribeToChanges(); });
+    document.addEventListener('DOMContentLoaded', () => { 
+      fetchAndRender(); 
+      subscribeToChanges(); 
+    });
+
   })();
-  </script>
+</script>
 </body>
 </html>

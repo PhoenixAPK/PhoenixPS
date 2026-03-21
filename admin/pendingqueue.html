@@ -118,21 +118,30 @@
         return;
       }
       items.forEach(req => {
-        const tr = document.createElement('tr');
-        const mode = req.sourceMode;
-        tr.onclick = () => handleRequestClick(req.request_id, mode);
-        const time = req.created_at ? new Date(req.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--:--';
-        const modeClass = mode === 'entrepreneur' ? 'mode-entrepreneur' : 'mode-client';
-        tr.innerHTML = `
-          <td class="ref-code">#PPS-${req.request_id.slice(0,8).toUpperCase()}</td>
-          <td><strong>${req.client?.name || 'Unknown'}</strong></td>
-          <td>${req.location?.city || '---'}</td>
-          <td>${(req.workspaces || []).length}</td>
-          <td><span class="mode-tag ${modeClass}">${mode}</span></td>
-          <td>${time}</td>`;
-        tbody.appendChild(tr);
-      });
-    }
+  const tr = document.createElement('tr');
+  const mode = req.sourceMode;
+
+  tr.onclick = () => {
+    handleRequestClick(req.request_id, mode);
+    window.moveToInProgress(req.request_id);
+  };
+
+  const time = req.created_at
+    ? new Date(req.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
+    : '--:--';
+
+  const modeClass = mode === 'entrepreneur' ? 'mode-entrepreneur' : 'mode-client';
+
+  tr.innerHTML = `
+    <td class="ref-code">#PPS-${req.request_id.slice(0,8).toUpperCase()}</td>
+    <td><strong>${req.client?.name || 'Unknown'}</strong></td>
+    <td>${req.location?.city || '---'}</td>
+    <td>${(req.workspaces || []).length}</td>
+    <td><span class="mode-tag ${modeClass}">${mode}</span></td>
+    <td>${time}</td>`;
+
+  tbody.appendChild(tr);
+});
 
     function subscribeToChanges(){
       window.supabaseClient

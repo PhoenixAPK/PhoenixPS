@@ -47,6 +47,7 @@
       <a href="#" class="nav-btn" onclick="logoutAdmin()">LOGOUT</a>
     </div>
   </nav>
+
   <div class="container">
     <div class="table-title"><span><span class="status-dot"></span>PENDING REQUESTS</span></div>
     <table>
@@ -63,30 +64,32 @@
       <tbody id="queueBody"></tbody>
     </table>
   </div>
+
   <footer>
     <img src="../assets/images/PPS logo.png" alt="Logo" class="footer-logo">
     <p>© 2026 PHOENIX PRINTING SOLUTIONS</p>
   </footer>
+
   <script>
   (function(){
     window.moveToInProgress = async (id) => {
-  try {
-    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-inprogress", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1eW1hYnJrd3Rwdmhyb3BjdnFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTEyOTUsImV4cCI6MjA4ODg2NzI5NX0.kg7WvMRblzVf2iaQbt4Zz7DuNDgHGn9AKFHM_maGiTk"
-      },
-      body: JSON.stringify({ request_id: id })
-    });
-  } catch (err) {
-    console.error("Error moving to in-progress:", err);
-  }
-};
+      try {
+        await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-inprogress", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1eW1hYnJrd3Rwdmhyb3BjdnFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTEyOTUsImV4cCI6MjA4ODg2NzI5NX0.kg7WvMRblzVf2iaQbt4Zz7DuNDgHGn9AKFHM_maGiTk"
+          },
+          body: JSON.stringify({ request_id: id })
+        });
+      } catch (err) {
+        console.error("Error moving to in-progress:", err);
+      }
+    };
+
     function handleRequestClick(id, mode) {
       const target = `admininvoice.html?request_id=${id}`;
       try {
-        // Fire-and-forget update: do NOT block navigation
         window.supabaseClient
           .from('pps_queue')
           .update({ status: 'in-progress' })
@@ -94,7 +97,6 @@
           .then(({ error }) => { if (error) console.error('Status update failed:', error); })
           .catch(err => console.error('Update error:', err));
       } catch (e) { console.error(e); }
-      // Always navigate
       window.location.href = target;
     }
 
@@ -118,31 +120,26 @@
         return;
       }
       items.forEach(req => {
-  const tr = document.createElement('tr');
-  const mode = req.sourceMode;
-
-  tr.onclick = () => {
-    handleRequestClick(req.request_id, mode);
-    window.moveToInProgress(req.request_id);
-  };
-
-  const time = req.created_at
-    ? new Date(req.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
-    : '--:--';
-
-  const modeClass = mode === 'entrepreneur' ? 'mode-entrepreneur' : 'mode-client';
-
-  tr.innerHTML = `
-    <td class="ref-code">#PPS-${req.request_id.slice(0,8).toUpperCase()}</td>
-    <td><strong>${req.client?.name || 'Unknown'}</strong></td>
-    <td>${req.location?.city || '---'}</td>
-    <td>${(req.workspaces || []).length}</td>
-    <td><span class="mode-tag ${modeClass}">${mode}</span></td>
-    <td>${time}</td>`;
-
-tbody.appendChild(tr);
-});
-  (function () {
+        const tr = document.createElement('tr');
+        const mode = req.sourceMode;
+        tr.onclick = () => {
+          handleRequestClick(req.request_id, mode);
+          window.moveToInProgress(req.request_id);
+        };
+        const time = req.created_at
+          ? new Date(req.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
+          : '--:--';
+        const modeClass = mode === 'entrepreneur' ? 'mode-entrepreneur' : 'mode-client';
+        tr.innerHTML = `
+          <td class="ref-code">#PPS-${req.request_id.slice(0,8).toUpperCase()}</td>
+          <td><strong>${req.client?.name || 'Unknown'}</strong></td>
+          <td>${req.location?.city || '---'}</td>
+          <td>${(req.workspaces || []).length}</td>
+          <td><span class="mode-tag ${modeClass}">${mode}</span></td>
+          <td>${time}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
 
     function subscribeToChanges() {
       window.supabaseClient
@@ -155,8 +152,7 @@ tbody.appendChild(tr);
       fetchAndRender(); 
       subscribeToChanges(); 
     });
-
   })();
-</script>
+  </script>
 </body>
 </html>

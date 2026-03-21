@@ -94,9 +94,9 @@
         tbody.appendChild(tr);
       });
     }
-    window.moveBack=async(id)=>{
-  try{
-    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-back", {
+    window.moveBack = async (id) => {
+  try {
+    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-pending", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -104,10 +104,12 @@
       },
       body: JSON.stringify({ request_id: id })
     });
-    fetchAndRender();
-  }catch(err){ console.error('Error moving back:', err); }
-};
 
+    fetchAndRender();
+  } catch (err) {
+    console.error("Error moving to pending:", err);
+  }
+};
 window.moveToArchive = async (id) =>{
   try {
     await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-archive", {

@@ -95,20 +95,27 @@
       });
     }
     window.moveBack=async(id)=>{
-      try{
-        await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-back", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ request_id: id })
-});
-        fetchAndRender();
-      }catch(err){ console.error('Error moving back:', err); }
-    };
-   window.moveToArchive = async (id) => {
+  try{
+    await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-back", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1eW1hYnJrd3Rwdmhyb3BjdnFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTEyOTUsImV4cCI6MjA4ODg2NzI5NX0.kg7WvMRblzVf2iaQbt4Zz7DuNDgHGn9AKFHM_maGiTk"
+      },
+      body: JSON.stringify({ request_id: id })
+    });
+    fetchAndRender();
+  }catch(err){ console.error('Error moving back:', err); }
+};
+
+window.moveToArchive = async (id) =>{
   try {
     await fetch("https://puymabrkwtpvhropcvqk.supabase.co/functions/v1/move-to-archive", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1eW1hYnJrd3Rwdmhyb3BjdnFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTEyOTUsImV4cCI6MjA4ODg2NzI5NX0.kg7WvMRblzVf2iaQbt4Zz7DuNDgHGn9AKFHM_maGiTk"
+      },
       body: JSON.stringify({ request_id: id })
     });
 
@@ -117,8 +124,9 @@
     console.error("Error moving to archive:", err);
   }
 };
+
 document.addEventListener('DOMContentLoaded', fetchAndRender);
-  })();
-  </script>
+})();
+</script>
 </body>
 </html>

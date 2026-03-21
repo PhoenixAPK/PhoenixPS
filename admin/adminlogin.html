@@ -165,7 +165,7 @@
             <button type="submit" class="login-btn">Secure Login</button>
             <div id="message" class="message"></div>
         </form>
-        <a href="../../public/index.html" class="back-to-public">Return to Public Site</a>
+        <a href="https://phoenixapk.github.io/PhoenixPS/public/index.html" class="back-to-public">Return to Public Site</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -186,8 +186,8 @@
                 msgEl.textContent = result.message;
                 if (result.redirect) {
                     setTimeout(() => {
-                        window.location.href = '../public/index.html';
-                    }, 500); // Near immediate redirect
+                        window.location.href = 'https://phoenixapk.github.io/PhoenixPS/public/index.html';
+                    }, 500); 
                 }
             }
         });
